@@ -5,7 +5,7 @@ Core runtime engine for Chambr rooms.
 ## Install
 
 ```bash
-yarn add @chambr/engine-core@git+https://github.com/hiitsmax/chambr-engine-core.git#v0.1.0
+yarn add @chambr/engine-core@git+https://github.com/hiitsmax/chambr-core.git#v0.1.1
 ```
 
 ## Development
