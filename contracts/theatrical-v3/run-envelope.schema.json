@@ -1,0 +1,356 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chambr.dev/contracts/theatrical-v3/run-envelope.schema.json",
+  "title": "Chambr Run Envelope V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "runId",
+    "chamberId",
+    "mode",
+    "startedAt",
+    "finishedAt",
+    "durationMs",
+    "input",
+    "output",
+    "metrics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "status": {
+      "const": "ok"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chamberId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["headless", "web-chat"]
+    },
+    "startedAt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finishedAt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "durationMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prompt", "presetId", "fixtureMode", "roomieIds", "modelConfig"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "presetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fixtureMode": {
+          "type": "string",
+          "enum": ["live", "record", "replay"]
+        },
+        "roomieIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "modelConfig": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["defaultAgentModel", "directorModel", "summarizerModel"],
+          "properties": {
+            "defaultAgentModel": {
+              "type": "string",
+              "minLength": 1
+            },
+            "directorModel": {
+              "type": "string",
+              "minLength": 1
+            },
+            "summarizerModel": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["events", "transcript", "directorPlan", "stateRef"],
+      "properties": {
+        "events": {
+          "$ref": "#/$defs/events"
+        },
+        "transcript": {
+          "type": "string",
+          "minLength": 1
+        },
+        "directorPlan": {
+          "$ref": "#/$defs/directorPlan"
+        },
+        "stateRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["chamberId", "turnIndex"],
+          "properties": {
+            "chamberId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "turnIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventCounts",
+        "totalEvents",
+        "directorAttempts",
+        "directorSource",
+        "turnIndexBefore",
+        "turnIndexAfter",
+        "latencyMs"
+      ],
+      "properties": {
+        "eventCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["speak", "action", "thought"],
+          "properties": {
+            "speak": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "action": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "thought": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "totalEvents": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "directorAttempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directorSource": {
+          "type": "string",
+          "enum": ["model", "repair", "fallback"]
+        },
+        "turnIndexBefore": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "turnIndexAfter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "latencyMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "$defs": {
+    "events": {
+      "$ref": "./events.schema.json"
+    },
+    "theatricalEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "author",
+        "content",
+        "eventId",
+        "beatId",
+        "schemaVersion",
+        "visibility",
+        "intensity",
+        "origin"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["speak", "action", "thought"]
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "eventId": {
+          "type": "string",
+          "pattern": "^t[0-9]+-[0-9]+$"
+        },
+        "beatId": {
+          "type": "string",
+          "pattern": "^b[0-9]+-[0-9]+$"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "private"]
+        },
+        "intensity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "origin": {
+          "type": "string",
+          "enum": ["roomie", "director", "repair"]
+        }
+      }
+    },
+    "directorPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractVersion", "schemaVersion", "turnIndex", "presetId", "budgets", "beats", "trace"],
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "turnIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "presetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "budgets": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maxDirectorAttempts",
+            "maxActionEventsPerTurn",
+            "maxThoughtEventsPerTurn",
+            "maxThoughtCharsPerEvent",
+            "targetP95TurnLatencyMs"
+          ],
+          "properties": {
+            "maxDirectorAttempts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxActionEventsPerTurn": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxThoughtEventsPerTurn": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxThoughtCharsPerEvent": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "targetP95TurnLatencyMs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "beats": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["beatId", "agentId", "intent", "allowAction", "allowThought", "toneHint", "maxEvents"],
+            "properties": {
+              "beatId": {
+                "type": "string",
+                "pattern": "^b[0-9]+-[0-9]+$"
+              },
+              "agentId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "intent": {
+                "type": "string",
+                "minLength": 1
+              },
+              "allowAction": {
+                "type": "boolean"
+              },
+              "allowThought": {
+                "type": "boolean"
+              },
+              "toneHint": {
+                "type": "string",
+                "minLength": 1
+              },
+              "maxEvents": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4
+              }
+            }
+          }
+        },
+        "trace": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "attempts"],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": ["model", "repair", "fallback"]
+            },
+            "attempts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

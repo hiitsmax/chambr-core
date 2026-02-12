@@ -14,6 +14,8 @@ yarn add @chambr/engine-core@git+https://github.com/hiitsmax/chambr-core.git#v0.
 yarn install
 yarn testbook
 yarn test:tui-compat
+yarn test:web-compat
+yarn harness:verify
 ```
 
 Core commands:
@@ -23,6 +25,7 @@ yarn testbook:preflight
 yarn lint
 yarn test:ci
 yarn build
+yarn harness:audit
 ```
 
 ## Release (manual)

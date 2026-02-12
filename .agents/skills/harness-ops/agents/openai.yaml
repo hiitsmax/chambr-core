@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Ops"
+  short_description: "Run core harness verify and audit routines"
+  default_prompt: "Use harness-ops to validate core contracts, consumer compatibility, and nightly invariant audits."

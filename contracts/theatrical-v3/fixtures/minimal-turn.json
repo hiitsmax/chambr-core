@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "status": "ok",
+  "runId": "fixture-minimal-turn",
+  "chamberId": "core-fixture",
+  "mode": "headless",
+  "startedAt": "2026-02-12T00:00:00.000Z",
+  "finishedAt": "2026-02-12T00:00:00.500Z",
+  "durationMs": 500,
+  "input": {
+    "prompt": "Give one concise strategy move.",
+    "presetId": "balanced",
+    "fixtureMode": "replay",
+    "roomieIds": ["r1"],
+    "modelConfig": {
+      "defaultAgentModel": "test/agent",
+      "directorModel": "test/director",
+      "summarizerModel": "test/summarizer"
+    }
+  },
+  "output": {
+    "events": [
+      {
+        "type": "speak",
+        "author": "Ava",
+        "content": "Prioritize the highest-impact milestone first.",
+        "eventId": "t1-1",
+        "beatId": "b1-1",
+        "schemaVersion": 1,
+        "visibility": "public",
+        "intensity": 2,
+        "origin": "roomie"
+      }
+    ],
+    "transcript": "Ava: Prioritize the highest-impact milestone first.",
+    "directorPlan": {
+      "contractVersion": 1,
+      "schemaVersion": 1,
+      "turnIndex": 0,
+      "presetId": "balanced",
+      "budgets": {
+        "maxDirectorAttempts": 2,
+        "maxActionEventsPerTurn": 1,
+        "maxThoughtEventsPerTurn": 1,
+        "maxThoughtCharsPerEvent": 64,
+        "targetP95TurnLatencyMs": 20000
+      },
+      "beats": [
+        {
+          "beatId": "b1-1",
+          "agentId": "r1",
+          "intent": "respond",
+          "allowAction": false,
+          "allowThought": false,
+          "toneHint": "balanced",
+          "maxEvents": 1
+        }
+      ],
+      "trace": {
+        "source": "model",
+        "attempts": 1
+      }
+    },
+    "stateRef": {
+      "chamberId": "core-fixture",
+      "turnIndex": 1
+    }
+  },
+  "metrics": {
+    "eventCounts": {
+      "speak": 1,
+      "action": 0,
+      "thought": 0
+    },
+    "totalEvents": 1,
+    "directorAttempts": 1,
+    "directorSource": "model",
+    "turnIndexBefore": 0,
+    "turnIndexAfter": 1,
+    "latencyMs": 500
+  }
+}

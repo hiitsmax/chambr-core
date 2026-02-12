@@ -23,7 +23,10 @@
     "test:ci": "vitest run --coverage",
     "testbook:preflight": "node scripts/testbook/preflight.mjs",
     "test:tui-compat": "node scripts/testbook/run-tui-compat.mjs",
+    "test:web-compat": "node scripts/testbook/run-web-compat.mjs",
     "testbook": "yarn testbook:preflight && yarn lint && yarn test:ci && yarn build",
+    "harness:verify": "yarn testbook && yarn test:tui-compat && yarn test:web-compat",
+    "harness:audit": "node scripts/harness/nightly-audit.mjs",
     "prepare": "npm run build",
     "prepack": "npm run build"
   },
@@ -38,6 +41,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.9",
+    "ajv": "^8.17.1",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"

@@ -6,13 +6,18 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const coreRoot = path.resolve(__dirname, "../..");
-const defaultTuiPath = path.resolve(coreRoot, "../chambr-tui");
-const tuiRoot = process.env.TUI_REPO_PATH
-  ? path.resolve(process.env.TUI_REPO_PATH)
-  : defaultTuiPath;
+const defaultWebPath = path.resolve(coreRoot, "../chambr");
+const webRoot = process.env.WEB_REPO_PATH ? path.resolve(process.env.WEB_REPO_PATH) : defaultWebPath;
 
-const reportPath = path.resolve(coreRoot, "coverage/tui-consumer-compat-report.json");
+const reportPath = path.resolve(coreRoot, "coverage/web-consumer-compat-report.json");
+
 const steps = [];
+const toNonPnpEnv = (baseEnv) => {
+  const next = { ...baseEnv };
+  delete next.NODE_OPTIONS;
+  delete next.NODE_PATH;
+  return next;
+};
 
 const run = (cwd, args, label, env = process.env) => {
   const startedAt = Date.now();
@@ -45,10 +50,10 @@ const writeReport = async (status, extra = {}) => {
   const payload = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
-    invariant: "INV-CORE-TUI-COMPAT",
+    invariant: "INV-CORE-WEB-COMPAT",
     status,
     coreRoot,
-    tuiRoot,
+    webRoot,
     steps,
     ...extra,
   };
@@ -58,18 +63,25 @@ const writeReport = async (status, extra = {}) => {
 const main = async () => {
   try {
     await assertPath(coreRoot, "Core repo");
-    await assertPath(tuiRoot, "TUI repo");
+    await assertPath(webRoot, "Web repo");
 
     run(coreRoot, ["install", "--immutable"], "core-install");
     run(coreRoot, ["build"], "core-build");
 
-    // TUI consumes this local core checkout through a file dependency, so
-    // immutable install will fail when the core hash differs from TUI lockfile.
-    run(tuiRoot, ["install", "--mode=skip-build"], "tui-install");
-    run(tuiRoot, ["test:core-compat"], "tui-core-compat");
+    const webEnv = toNonPnpEnv(process.env);
+    run(webRoot, ["install", "--frozen-lockfile"], "web-install", webEnv);
+    run(
+      webRoot,
+      ["test:core-compat"],
+      "web-core-compat",
+      {
+        ...webEnv,
+        CORE_REPO_PATH: coreRoot,
+      }
+    );
 
     await writeReport("ok");
-    process.stdout.write(`[tui-compat] ok -> ${reportPath}\n`);
+    process.stdout.write(`[web-compat] ok -> ${reportPath}\n`);
   } catch (error) {
     await writeReport("error", {
       error: error instanceof Error ? error.message : String(error),

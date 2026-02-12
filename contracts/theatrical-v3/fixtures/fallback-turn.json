@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "status": "ok",
+  "runId": "fixture-fallback-turn",
+  "chamberId": "core-fixture",
+  "mode": "headless",
+  "startedAt": "2026-02-12T00:00:10.000Z",
+  "finishedAt": "2026-02-12T00:00:10.400Z",
+  "durationMs": 400,
+  "input": {
+    "prompt": "How should we recover from a risk?",
+    "presetId": "strategic",
+    "fixtureMode": "replay",
+    "roomieIds": ["r1"],
+    "modelConfig": {
+      "defaultAgentModel": "test/agent",
+      "directorModel": "test/director",
+      "summarizerModel": "test/summarizer"
+    }
+  },
+  "output": {
+    "events": [
+      {
+        "type": "speak",
+        "author": "Ava",
+        "content": "We should contain scope and re-baseline immediately.",
+        "eventId": "t1-1",
+        "beatId": "b1-1",
+        "schemaVersion": 1,
+        "visibility": "public",
+        "intensity": 2,
+        "origin": "roomie"
+      }
+    ],
+    "transcript": "Ava: We should contain scope and re-baseline immediately.",
+    "directorPlan": {
+      "contractVersion": 1,
+      "schemaVersion": 1,
+      "turnIndex": 0,
+      "presetId": "strategic",
+      "budgets": {
+        "maxDirectorAttempts": 1,
+        "maxActionEventsPerTurn": 1,
+        "maxThoughtEventsPerTurn": 1,
+        "maxThoughtCharsPerEvent": 64,
+        "targetP95TurnLatencyMs": 20000
+      },
+      "beats": [
+        {
+          "beatId": "b1-1",
+          "agentId": "r1",
+          "intent": "respond-helpfully",
+          "allowAction": false,
+          "allowThought": false,
+          "toneHint": "balanced",
+          "maxEvents": 1
+        }
+      ],
+      "trace": {
+        "source": "fallback",
+        "attempts": 0,
+        "reason": "director-invalid-json"
+      }
+    },
+    "stateRef": {
+      "chamberId": "core-fixture",
+      "turnIndex": 1
+    }
+  },
+  "metrics": {
+    "eventCounts": {
+      "speak": 1,
+      "action": 0,
+      "thought": 0
+    },
+    "totalEvents": 1,
+    "directorAttempts": 0,
+    "directorSource": "fallback",
+    "turnIndexBefore": 0,
+    "turnIndexAfter": 1,
+    "latencyMs": 400
+  }
+}

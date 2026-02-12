@@ -1,0 +1,122 @@
+name: Harness Nightly
+
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          package-manager-cache: false
+      - run: corepack enable
+      - run: yarn install --immutable
+      - id: harness_audit
+        run: yarn harness:audit
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-harness-audit-report
+          path: coverage/harness-audit-report.json
+      - name: Upsert harness audit issue
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'coverage/harness-audit-report.json';
+            if (!fs.existsSync(path)) {
+              core.warning('harness-audit report not found; skipping issue update');
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const failed = (report.checks || []).filter((check) => !check.ok);
+            const title = '[harness-audit] nightly';
+            const header = `Generated: ${report.generatedAt}`;
+            const summary = report.status === 'ok'
+              ? 'No findings in nightly harness audit.'
+              : `${failed.length} finding(s) detected.`;
+            const details = failed.length
+              ? failed.map((check) => `- [ ] ${check.name}: ${check.detail}`).join('\n')
+              : '- [x] All checks passed.';
+
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'harness-audit',
+              });
+            } catch {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'harness-audit',
+                color: '0e8a16',
+                description: 'Nightly harness audit tracking',
+              });
+            }
+
+            const body = [
+              `## ${summary}`,
+              '',
+              header,
+              '',
+              '### Checks',
+              details,
+              '',
+              'Artifact: `coverage/harness-audit-report.json`',
+            ].join('\n');
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'harness-audit',
+              per_page: 100,
+            });
+
+            const current = issues.find((issue) => issue.title === title);
+            if (!current) {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['harness-audit'],
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: created.data.number,
+                body: `Nightly status: **${report.status}**`,
+              });
+              return;
+            }
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: current.number,
+              body,
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: current.number,
+              body: `Nightly status (${report.generatedAt}): **${report.status}**`,
+            });
+      - name: Fail when findings exist
+        if: always()
+        run: |
+          node -e "const fs=require('fs');const p='coverage/harness-audit-report.json';if(!fs.existsSync(p)){process.exit(1)};const r=JSON.parse(fs.readFileSync(p,'utf8'));if(r.status!=='ok'){process.exit(1)}"
