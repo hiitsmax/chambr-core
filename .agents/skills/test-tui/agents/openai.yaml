@@ -1,0 +1,4 @@
+interface:
+  display_name: "Core TUI Compat"
+  short_description: "Run chambr-core to chambr-tui compatibility gate"
+  default_prompt: "Use the test-tui skill to verify chambr-core changes against chambr-tui consumer contracts."

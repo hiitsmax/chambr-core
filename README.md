@@ -12,7 +12,16 @@ yarn add @chambr/engine-core@git+https://github.com/hiitsmax/chambr-core.git#v0.
 
 ```bash
 yarn install
+yarn testbook
+yarn test:tui-compat
+```
+
+Core commands:
+
+```bash
+yarn testbook:preflight
 yarn lint
+yarn test:ci
 yarn build
 ```
 
